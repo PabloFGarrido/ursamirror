@@ -1,0 +1,41 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "ursamirror"
+version = "0.1"
+description = 'A Python package for the analysis of the Mirror Tracing Task in polar coordinates'
+readme = "README.md"
+requires-python = ">=3.9"
+license = "MIT"
+keywords = []
+authors = [
+  { name = "Pablo F. Garrido", email = "f.garrido.pablo@gmail.com" },
+  { name = "Emilie Sogn Falch ", email = "emilie.falch@gmail.com" }
+]
+maintainers = [
+  { name = "Pablo F. Garrido", email = "f.garrido.pablo@gmail.com" },
+  { name = "Emilie Sogn Falch ", email = "emilie.falch@gmail.com" }
+]
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Programming Language :: Python",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+  "Programming Language :: Python :: 3.12"
+]
+dependencies  = [
+  "matplotlib",
+  "numpy",
+  "pandas",
+  "scipy",
+  "scikit-image"
+]
+
+[project.urls]
+Documentation = "https://github.com/PabloFGarrido/ursamirror#readme"
+Issues = "https://github.com/PabloFGarrido/ursamirror/issues"
+Source = "https://github.com/PabloFGarrido/ursamirror"
+
