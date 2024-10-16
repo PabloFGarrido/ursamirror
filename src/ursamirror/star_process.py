@@ -401,3 +401,4 @@ class STAR:
         ax[3].set_theta_direction(-1)
 
         fig.tight_layout()
+        fig.show()
