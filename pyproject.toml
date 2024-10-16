@@ -20,11 +20,22 @@ maintainers = [
 ]
 classifiers = [
   "Development Status :: 4 - Beta",
+  "Framework :: IPython",
+  "Framework :: Jupyter",
+  "Framework :: Pytest",
+  "Intended Audience :: Education",
+  "Intended Audience :: Science/Research",
+  "License :: OSI Approved :: MIT License",
+  "Natural Language :: English",
+  "Operating System :: OS Independent",
   "Programming Language :: Python",
   "Programming Language :: Python :: 3.9",
   "Programming Language :: Python :: 3.10",
   "Programming Language :: Python :: 3.11",
-  "Programming Language :: Python :: 3.12"
+  "Programming Language :: Python :: 3.12",
+  "Topic :: Education",
+  "Topic :: Scientific/Engineering",
+  "Topic :: Scientific/Engineering :: Image Processing"  
 ]
 dependencies  = [
   "matplotlib",
