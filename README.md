@@ -15,6 +15,9 @@
 ```console
 pip install ursamirror
 ```
+```console
+https://github.com/PabloFGarrido/ursamirror
+```
 
 ## License
 
