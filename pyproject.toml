@@ -1,10 +1,10 @@
 [build-system]
-requires = ["hatchling"]
+requires = ["hatchling", "hatch-vcs"]
 build-backend = "hatchling.build"
 
 [project]
 name = "ursamirror"
-version = "0.1"
+dynamic = ["version"]
 description = 'A Python package for the analysis of the Mirror Tracing Task in polar coordinates'
 readme = "README.md"
 requires-python = ">=3.9"
@@ -44,6 +44,15 @@ dependencies  = [
   "scipy",
   "scikit-image"
 ]
+
+[tool.hatch.version]
+source = "vcs"
+
+[tool.hatch.build.hooks.vcs]
+version-file = "_version.py"
+
+[tool.hatch.vcs]
+tag_pattern = "v*"
 
 [project.urls]
 Documentation = "https://github.com/PabloFGarrido/ursamirror#readme"
