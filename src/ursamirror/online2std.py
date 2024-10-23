@@ -11,7 +11,7 @@ from skimage import io, img_as_ubyte
 from ursamirror.utils import inner_star
 
 
-def online2std(path_to_image, new_path="none", save=True):
+def online2std(path_to_image, new_path="none", save=False):
     """
     Transform an image from the webpage application to the standard format
     used in this project
@@ -20,11 +20,12 @@ def online2std(path_to_image, new_path="none", save=True):
     ----------
     path_to_image : str
         Path to the saved original file
-    save : bool
-        Parameter to indicate whether or not to save the image. True for saving,
-        False for just returning it as a 3D array of shape (n, m, 4).
     new_path : str
         Path to the new transformed file
+    save : bool
+        Parameter to indicate whether or not to save the image. True for saving,
+        False for just returning it as a 3D array of shape (n, m, 4). By default, False.
+
 
     Returns
     -------
@@ -53,13 +54,14 @@ def online2std(path_to_image, new_path="none", save=True):
     border = red < 1
     inside = inner_star(border)
 
-    complete_image = path | (inside.astype(bool)) | (border)
+    complete_image = path | inside | border
 
-    transformed_image = dstack((path, inside, border, complete_image))
+    transformed_image = img_as_ubyte(
+        dstack((path, inside, border, complete_image)))
 
     if save:
         if new_path != "none":
-            io.imsave(new_path, img_as_ubyte(transformed_image))
+            io.imsave(new_path, transformed_image)
 
         else:
             raise ValueError("Save path must be provided if save is True.")
