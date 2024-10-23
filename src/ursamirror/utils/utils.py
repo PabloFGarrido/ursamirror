@@ -99,7 +99,7 @@ def inner_star(border_image):
     # Remove borders
     inner = (inner * ~inn) * ~out
 
-    return inner
+    return inner.astype(bool)
 
 
 def endpoints(sk_image):
@@ -138,7 +138,7 @@ def valid_regions(path_image, min_size=16):
         2D array of shape (n, m) containing the initial suggestion of the
         drawn path 
     min_size : int
-        Minimun size of an independent path to be considered in the analysis,
+        Minimum size of an independent path to be considered in the analysis,
         by default 16
 
     Returns
@@ -154,11 +154,66 @@ def valid_regions(path_image, min_size=16):
     return np.isin(labeled_image, valid_labels)
 
 
-def expand_through_border(points_coordinates, distance_matrix, border, path_thick):
+def pulsation(gaps, border, path_thick):
     """
-    Connects the points in an image by expanding them along the border of
-    the shape. This function has been created to connect the parts of the path 
-    that are cut when crossing the edge of the figure.
+    Iteratively compress and expands the gaps through the borders. It is created
+    to solve the problem when two dots are connected without completely crossing
+    the border
+
+    Parameters
+    ----------
+    gaps : numpy.ndarray
+        2D array of shape (n, m) containing the artificial pieces of the path
+        representing the filled gaps
+    border : numpy.ndarray
+        2D array of shape (n, m) containing the borders of the shape
+    path_thick : float
+        Thickness of the drawn path.
+    Returns
+    -------
+    numpy.ndarray
+        2D array of shape (n, m) containing the pulsated gaps
+    """
+    in_border = gaps & border
+    skeleton_in_border = skeletonize(in_border)
+
+    for i in range(int(path_thick)-1):
+        dilated_skeleton = binary_dilation(
+            skeleton_in_border, disk(path_thick/2))
+        in_border = dilated_skeleton & border
+        skeleton_in_border = skeletonize(in_border)
+    return binary_dilation(skeleton_in_border, disk(path_thick/2)) & border
+
+
+def closing_border(path_image, border, path_thick):
+    """
+    Apply the binary closing method constrained to the expansion on the border.
+    Helps not closing corners.
+
+    Parameters
+    ----------
+    path_image : numpy.ndarray
+        2D array of shape (n, m) containing the path to be closed.
+    border : numpy.ndarray
+        2D array of shape (n, m) containing the borders of the shape
+    path_thick : float
+        Thickness of the drawn path.
+    Returns
+    -------
+    numpy.ndarray
+        2D array of shape (n, m) containing the pulsated gaps
+    """
+    closed_path = binary_closing(path_image, disk(path_thick/2))
+    path_on_border = closed_path & border
+
+    return path_image | path_on_border
+
+
+def expand_through_border(points_coordinates, distance_matrix, border, path_thick, restrict=False):
+    """
+    Connects the points in an image by expanding thre line that connects them 
+    along the border of the shape. This function has been created to connect 
+    the parts of the path that are cut when crossing the edge of the figure.
 
     Parameters
     ----------
@@ -170,9 +225,11 @@ def expand_through_border(points_coordinates, distance_matrix, border, path_thic
         points.
     border : numpy.ndarray
         2D array of shape (n, m) containing the borders of the shape
-    path_thi : float
+    path_thick : float
         Thickness of the drawn path.
-
+    restrict  : bool
+        Parameter to indicate whether or not to use a restriction on how far the
+        path can grow through the border. By default, False.
     Returns
     -------
     numpy.ndarray
@@ -184,27 +241,34 @@ def expand_through_border(points_coordinates, distance_matrix, border, path_thic
     connections = []
     for i in range(distance_matrix.shape[0]):
         closest_neighbor_index = np.argmin(distance_matrix[i, :])
-        if np.argmin(distance_matrix[closest_neighbor_index, :]) == i:
+        if (np.argmin(distance_matrix[closest_neighbor_index, :]) == i) and closest_neighbor_index != i:
             connections.append([i, closest_neighbor_index])
     connections = np.array(connections)
 
-    border_new = np.zeros_like(border)
+    path_gaps = np.zeros_like(border)
     for connection in connections:
-        border_new_aux = np.zeros_like(border)
+        path_gaps_aux = np.zeros_like(border)
         # Create a straight line to connect the points
         rr, cc = line(
             *points_coordinates[:, connection[0]],
             *points_coordinates[:, connection[1]])
-        border_new_aux[rr, cc] = True
+        path_gaps_aux[rr, cc] = True
 
-        # not allowing connections too far from the border
-        if ((border_new_aux & border).sum()/border_new_aux.sum()) > .25:
-            border_new[rr, cc] = True
+        if restrict:
+            # not allowing connections too far from the border
+            if ((path_gaps_aux & border).sum()/path_gaps_aux.sum()) > .25:
+                path_gaps[rr, cc] = True
+        path_gaps[rr, cc] = True
 
-    return binary_dilation(border_new, disk(path_thick/2))
+    # Expand the connected lines with the path thickness
+    expanded_gaps = binary_dilation(path_gaps, disk(path_thick/2))
 
+    # Iteratively expand
 
-def fill_path(pre_path, border, min_size=16):
+    # return pulsation(expanded_gaps, border, path_thick)
+    return expanded_gaps
+
+def fill_path(pre_path, border, min_size=16, restrict=False):
     """
     Complete a drawn path that is interrupted by the intersection with the edges
 
@@ -216,8 +280,11 @@ def fill_path(pre_path, border, min_size=16):
     border : numpy.ndarray
         2D array of shape (n, m) containing the borders of the shape
     min_size : int
-        Minimun size of an independent path to be considered in the analysis,
+        Minimum size of an independent path to be considered in the analysis,
         by default 16
+    restrict  : bool
+        Parameter to indicate whether or not to use a restriction on how far the
+        path can grow through the border. By default, False.
 
     Returns
     -------
@@ -229,6 +296,8 @@ def fill_path(pre_path, border, min_size=16):
     # Clean the path, get its thickness and label the skeleton.
     pre_path_clean = pre_path * valid_regions(pre_path, min_size)
     path_thick = path_thickness(pre_path_clean)
+    pre_path_clean = closing_border(pre_path_clean, border, path_thick/2)
+
     pp_clean_sk = skeletonize(pre_path_clean)
     labeled_sk = skimage_label(pp_clean_sk, connectivity=2)
 
@@ -247,8 +316,9 @@ def fill_path(pre_path, border, min_size=16):
     filled_gaps = expand_through_border(endpoints_coordinates,
                                         distance_matrix, border, path_thick)
 
-    completed_path = (filled_gaps & border) | pre_path_clean
+    completed_path = filled_gaps | pre_path_clean
     completed_path *= valid_regions(completed_path, min_size)
-    completed_path = binary_closing(completed_path, disk(path_thick))
+    # completed_path = binary_closing(completed_path, disk(path_thick))
+    completed_path = closing_border(completed_path, border, path_thick)
 
     return completed_path
