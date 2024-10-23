@@ -12,7 +12,7 @@ A Python package and GUI for analyzing the Mirror Tracing Task in polar coordina
 - [Usage](#usage)
 - [Installation](#installation)
 - [License](#license)
-- [How to cite](#howtocite)
+- [How to cite](#how-to-cite)
 
 ## Highlights
 
