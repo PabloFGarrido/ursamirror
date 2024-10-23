@@ -1,0 +1,8 @@
+
+#ignore /figures folder
+figures/
+
+.bashrc.save
+
+.ipynb*
+.spyproject*
