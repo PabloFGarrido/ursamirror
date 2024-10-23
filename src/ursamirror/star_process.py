@@ -335,6 +335,7 @@ class STAR:
                                                                     residuals, centered_angles)
 
         data = {"Angles": centered_angles,
+                "Angles_degrees": np.rad2deg(centered_angles),
                 "Density": density,
                 "Residuals": mean_residuals,
                 "Residuals_sqrd": mean_sqrd_residuals}
