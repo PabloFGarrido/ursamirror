@@ -11,15 +11,14 @@ requires-python = ">=3.9"
 license = "MIT"
 keywords = []
 authors = [
-  { name = "Pablo F. Garrido", email = "f.garrido.pablo@gmail.com" },
-  { name = "Emilie Sogn Falch ", email = "emilie.falch@gmail.com" }
+  { name = "Pablo F. Garrido", email = "f.garrido.pablo@gmail.com" }
 ]
 maintainers = [
   { name = "Pablo F. Garrido", email = "f.garrido.pablo@gmail.com" },
   { name = "Emilie Sogn Falch ", email = "emilie.falch@gmail.com" }
 ]
 classifiers = [
-  "Development Status :: 5 - Production/Stable",
+  "Development Status :: 4 - Beta",
   "Framework :: IPython",
   "Framework :: Jupyter",
   "Framework :: Pytest",
