@@ -19,7 +19,7 @@ maintainers = [
   { name = "Emilie Sogn Falch ", email = "emilie.falch@gmail.com" }
 ]
 classifiers = [
-  "Development Status :: 4 - Beta",
+  "Development Status :: 5 - Production/Stable",
   "Framework :: IPython",
   "Framework :: Jupyter",
   "Framework :: Pytest",
