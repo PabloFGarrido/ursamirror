@@ -3,7 +3,7 @@
 A Python package and GUI for analyzing the Mirror Tracing Task in polar coordinates.
 
 [![PyPI - Version](https://img.shields.io/pypi/v/ursamirror.svg)](https://pypi.org/project/ursamirror)
-![DOI](https://zenodo.org/badge/873064551.svg)](https://doi.org/10.5281/zenodo.13987806)
+[![DOI](https://zenodo.org/badge/873064551.svg)](https://doi.org/10.5281/zenodo.13987806)
 [![PyPI - Python Version](https://img.shields.io/pypi/pyversions/ursamirror.svg)](https://pypi.org/project/ursamirror)
 [![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-2.1-4baaaa.svg)](code_of_conduct.md) 
 -----
