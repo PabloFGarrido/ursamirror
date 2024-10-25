@@ -303,7 +303,8 @@ def fill_path(pre_path, border, min_size=16, restrict=False):
 
     # Get the endpoints of every piece of the drawn path.
     endpoints_coordinates = np.array(np.nonzero(endpoints(pp_clean_sk)))
-    endpoints_label = labeled_sk[*endpoints_coordinates]
+    endpoints_label = labeled_sk[endpoints_coordinates[0], 
+                                 endpoints_coordinates[1]]
 
     # Determine the distance between all the endpoints.
     # Self-distance and distance to other points of the same piece of the path
