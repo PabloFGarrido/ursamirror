@@ -9,6 +9,7 @@ import numpy as np
 from scipy.ndimage import distance_transform_edt, convolve
 from scipy.spatial.distance import cdist
 from skimage.draw import line
+from skimage.filters import threshold_otsu
 from skimage.measure import label as skimage_label
 from skimage.morphology import binary_dilation, binary_closing, skeletonize, disk
 from skimage.segmentation import flood
@@ -62,6 +63,15 @@ def split_borders(border_image):
 
     """
     labeled_array = skimage_label(border_image)
+    if len(np.unique(labeled_array)) > 3:
+    
+        # to fill possible small gaps, the image is dilated
+        border_thick = path_thickness(border_image)
+        dilated_border = binary_dilation(
+            border_image, disk(border_thick/2))
+    
+        labeled_array_aux = skimage_label(dilated_border)
+        labeled_array = labeled_array_aux*border_image
 
     if np.sum(labeled_array == 1) > np.sum(labeled_array == 2):
         outer_border = labeled_array == 1
@@ -268,6 +278,7 @@ def expand_through_border(points_coordinates, distance_matrix, border, path_thic
     # return pulsation(expanded_gaps, border, path_thick)
     return expanded_gaps
 
+
 def fill_path(pre_path, border, min_size=16, restrict=False):
     """
     Complete a drawn path that is interrupted by the intersection with the edges
@@ -303,7 +314,7 @@ def fill_path(pre_path, border, min_size=16, restrict=False):
 
     # Get the endpoints of every piece of the drawn path.
     endpoints_coordinates = np.array(np.nonzero(endpoints(pp_clean_sk)))
-    endpoints_label = labeled_sk[endpoints_coordinates[0], 
+    endpoints_label = labeled_sk[endpoints_coordinates[0],
                                  endpoints_coordinates[1]]
 
     # Determine the distance between all the endpoints.
@@ -323,3 +334,63 @@ def fill_path(pre_path, border, min_size=16, restrict=False):
     completed_path = closing_border(completed_path, border, path_thick)
 
     return completed_path
+
+
+def frequent_value(input_list):
+    """
+    Returns the most frequent  in a list. Used to 
+
+    Parameters
+    ----------
+    input_list : list
+
+
+    Returns
+    -------
+    Any
+        Most frequent value in the list
+
+    """
+    vals, counts = np.unique(input_list, return_counts=True)
+    ind = np.argmax(counts)
+
+    return vals[ind]
+
+
+def find_color(image, mask_background):
+    """
+    Find the main color of the drawing. Created to correct problems with 
+    the digitized images. 
+
+    Parameters
+    ----------
+    image : numpy.ndarray
+        3D array of shape (n, m, 3) containing the complete image of the task.
+    mask_background : numpy.ndarray
+        2D array of shape (n, m) containing the maks of the background (0 for background)
+
+    Returns
+    -------
+    str
+        Name of the main path color (red, green or blue)
+
+    """
+    red, green, blue = image[:, :, 0], image[:, :, 1], image[:, :, 2]
+
+    red_mask = red < threshold_otsu(red)
+    green_mask = green < threshold_otsu(green)
+    blue_mask = blue < threshold_otsu(blue)
+    
+    masks = np.stack([red_mask, green_mask, blue_mask], axis=0)
+    
+    #We restric the maks to the pixels in just 2 of the masks
+    sum_masks = np.sum(masks, axis=0) 
+    new_mask = (sum_masks == 2)
+
+    path_color = []
+    color_values = {"red": (red*new_mask).sum(),
+                    "green": (green*new_mask).sum(),
+                    "blue": (blue*new_mask).sum()}
+    path_color = max(color_values, key=color_values.get)
+
+    return path_color

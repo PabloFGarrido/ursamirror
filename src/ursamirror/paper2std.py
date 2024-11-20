@@ -10,7 +10,8 @@ from skimage import io, img_as_ubyte
 from skimage.color import rgb2gray
 from skimage.filters import threshold_otsu
 
-from ursamirror.utils import fill_path, inner_star,  valid_regions
+from ursamirror.utils import (complete_border, fill_path, find_color,
+                              inner_star,  valid_regions)
 
 
 def paper2std(path_to_image, new_path="none", path_color="auto", save=False,
@@ -56,10 +57,7 @@ def paper2std(path_to_image, new_path="none", path_color="auto", save=False,
     mask_background = rgb2gray(image) < threshold_otsu(image_gray)
 
     if path_color == "auto":
-        color_values = {"red": (red*mask_background).sum(),
-                        "green": (green*mask_background).sum(),
-                        "blue": (blue*mask_background).sum()}
-        path_color = max(color_values, key=color_values.get)
+        path_color = find_color(image, mask_background)
 
     main_color = color_dict[path_color]
 
@@ -74,6 +72,7 @@ def paper2std(path_to_image, new_path="none", path_color="auto", save=False,
     pre_path = pre_path > threshold_otsu(pre_path)
 
     border = pre_border*valid_regions(pre_border, border_size_limit)
+    border = complete_border(border)
     path = fill_path(pre_path, border, path_size_limit)
     inside = inner_star(border)
     complete_image = path | inside | border

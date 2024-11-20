@@ -8,7 +8,7 @@ from argparse import ArgumentParser
 from numpy import argwhere, dstack
 from skimage import io, img_as_ubyte
 
-from ursamirror.utils import inner_star
+from ursamirror.utils import complete_border, inner_star
 
 
 def online2std(path_to_image, new_path="none", save=False):
@@ -52,6 +52,7 @@ def online2std(path_to_image, new_path="none", save=False):
 
     path = (red - green) > 0  # The drawn line is in red.
     border = red < 1
+    border = complete_border(border)
     inside = inner_star(border)
 
     complete_image = path | inside | border

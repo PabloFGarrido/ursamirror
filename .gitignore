@@ -1,6 +1,8 @@
 
 #ignore /figures folder
 figures/
+*__pycache__*
+
 
 _version.py
 
