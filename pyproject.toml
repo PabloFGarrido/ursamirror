@@ -6,7 +6,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "ursamirror"
-version = "v0.2.3"  #help with git describe
+version = "v0.2.4"  #help with git describe
 description = 'A Python package for the analysis of the Mirror Tracing Task in polar coordinates'
 readme = "README.md"
 requires-python = ">=3.9"
