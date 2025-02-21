@@ -47,12 +47,10 @@ def star_blue(image):
     return app_transf
 
 # Function to plot a set of images
-def plot_images(images, titles, transformed_func=None, figsize=(20, 6)):
+def plot_images(images, titles, figsize=(20, 6)):
     fig, ax = plt.subplots(1, len(images), figsize=figsize)
     ax = ax.flatten()
     for i, (img, title) in enumerate(zip(images, titles)):
-        if transformed_func:
-            img = transformed_func(img)
         ax[i].imshow(img)
         ax[i].axis('off')
         ax[i].set_title(title, fontsize=20)
@@ -70,9 +68,8 @@ app = io.imread("../raw_data/app/04_App.png")
 
 # Plot raw images
 plot_images(
-    [online, paper1, paper2, app],
-    ["Online", "Paper-thin", "Paper-thick", "App"],
-    transformed_func=app2paper
+    [online, paper1, paper2, app2paper(app)],
+    ["Online", "Paper-thin", "Paper-thick", "App"]
 )
 
 # Plot processed images
@@ -83,12 +80,12 @@ plot_images(
 
 # Plot combined raw and processed images
 fig_all, ax_all = plt.subplots(2, 4, figsize=(20, 12))
-for i, (raw, proc) in enumerate(zip([online, paper1, paper2, app], [online_procs, paper1_procs, paper2_procs, app])):
-    ax_all[0, i].imshow(app2paper(raw))
-    ax_all[0, i].set_title("Raw - {0}".format(["Online", "Paper-thin", "Paper-thick", "App"][i]), fontsize=20)
+for i, (raw, proc) in enumerate(zip([online, paper1, paper2, app2paper(app)], [online_procs, paper1_procs, paper2_procs, app])):
+    ax_all[0, i].imshow(raw)
+    ax_all[0, i].set_title(["Online", "Paper-thin", "Paper-thick", "App"][i], fontsize=20)
     ax_all[1, i].imshow(proc)
-ax_all[0, 0].axis('off')
-ax_all[1, 0].axis('off')
+    ax_all[0, i].axis('off')
+    ax_all[1, i].axis('off')
 fig_all.tight_layout()
 plt.show()
 
@@ -96,31 +93,41 @@ plt.show()
 #%%  Different shapes form star-equation
 
 X = np.linspace(-np.pi, np.pi, 3600)
-star_params = [
-    {"title": "Number of peaks", "sweep_var": "n", "sweep_values": np.linspace(3, 11, 9), "fixed_params": {"r1": 1, "r2": 1.2, "m": 1.5, "k": 1}},
-    {"title": "Side deepness", "sweep_var": "m", "sweep_values": np.linspace(1, 3.5, 9), "fixed_params": {"n": 5, "r1": 1, "r2": 1.2, "k": 1}},
-    {"title": "Star width", "sweep_var": "r2", "sweep_values": np.linspace(1, 2, 9), "fixed_params": {"n": 5, "r1": 1, "m": 2.5, "k": 1}},
-    {"title": "Peak smoothness", "sweep_var": "k", "sweep_values": np.linspace(0, 1, 9), "fixed_params": {"n": 5, "r1": 1, "r2": 1.2, "m": 2.5}}
+plot_params = [
+    {"title": "Number of peaks", "sweep_var": "n", "sweep_values": np.linspace(3, 11, 9), "fixed": {"r1": 1, "r2": 1.2, "m": 1.5, "k": 1}},
+    {"title": "Side deepness", "sweep_var": "m", "sweep_values": np.linspace(1, 3.5, 9), "fixed": {"n": 5, "r1": 1, "r2": 1.2, "k": 1}},
+    {"title": "Star width", "sweep_var": "r2", "sweep_values": np.linspace(1, 2, 9), "fixed": {"n": 5, "r1": 1, "m": 2.5, "k": 1}},
+    {"title": "Peak smoothness", "sweep_var": "k", "sweep_values": np.linspace(0, 1, 9), "fixed": {"n": 5, "r1": 1, "r2": 1.2, "m": 2.5}},
 ]
 
-for params in star_params:
+for params in plot_params:
+    title = params["title"]
+    sweep_var = params["sweep_var"]
+    sweep_values = params["sweep_values"]
+    fixed = params["fixed"]
+
     fig, ax = plt.subplots(3, 3, subplot_kw={'projection': 'polar'})
     ax = ax.flatten()
+
     i = -1
-    for val in params["sweep_values"]:
+    for value in sweep_values:
         i += 1
-        current_params = params["fixed_params"].copy()
-        current_params[params["sweep_var"]] = val
-        ax[i].plot(X, um.utils.star_equations.star_eq(X, **current_params), "k")
-        ax[i].plot(X, um.utils.star_equations.star_eq(X, r2=current_params["r2"], **current_params), "k")
+        current_params = fixed.copy()
+        current_params[sweep_var] = value
+        
+        n = current_params.get("n", 5)
+        m = current_params.get("m", 1.5)
+        k = current_params.get("k", 1)
+        r1 = current_params["r1"]
+        r2 = current_params["r2"]
+        
+        ax[i].plot(X, um.utils.star_eq(X, r1, m, k, n), "k")
+        ax[i].plot(X, um.utils.star_eq(X, r2, m, k, n), "k")
         ax[i].axis("off")
         ax[i].set_theta_zero_location("N")
-    fig.suptitle(params["title"], fontsize=20)
+    
+    fig.suptitle(title, fontsize=20)
     fig.tight_layout()
-    plt.show()
-
-
-
 #%% anomalous stars
 
 good = um.STAR("../raw_data/app/A.png")

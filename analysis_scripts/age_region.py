@@ -16,6 +16,12 @@ from ursamirror.utils import star_eq
 import matplotlib.colors as mcolors
 import matplotlib.cm as cm
 
+#Using "star_eq" needs '+ np.deg2rad(36)' dephase to be North oriented when plotting
+
+def star_eq_mod(phi, rho, m, k=1, n=5):
+    return star_eq(phi+ np.deg2rad(36), rho, m, k=1, n=5)
+
+
 scaler = StandardScaler()
 
 # Star coefficients
@@ -23,11 +29,19 @@ star_out = np.array([ 1.2, -2.5,  1, 5])
 star_in = np.array([ 1., -2.5,  1, 5])
 
 #%% Read and concatenate data
-LIST = np.read("participants_path.txt")
+metadata = pd.read_csv("../simulated_data/simulated_metadata.csv",sep=",")
+
+LIST = []
+for participant in os.listdir("../simulated_data/"):
+    if "sim_participant" in participant:
+        LIST.append("../simulated_data/"+participant)
 
 dataframes = []                
 for file_path in LIST:
     df = pd.read_csv(file_path)
+    ID = file_path.split('/')[-1].replace(".csv","")
+    df['ID'] = ID
+    df["Age"] = float(metadata[metadata.ID==ID].age.iloc[0])
     dataframes.append(df)
     
 combined_df = pd.concat(dataframes,ignore_index=True) 
@@ -79,8 +93,8 @@ for i in range(3):
     ax[i].set_theta_direction(-1)
     ax[i].set_yticklabels([])
     ax[i].yaxis.grid(False)
-    ax[i].plot(A,star_eq(A,*star_out),"k",lw=3)
-    ax[i].plot(A,star_eq(A,*star_in),"k",lw=3)
+    ax[i].plot(A,star_eq_mod(A,*star_out),"k",lw=3) 
+    ax[i].plot(A,star_eq_mod(A,*star_in),"k",lw=3)
     ax[i].tick_params(axis='x', which='major', labelsize=15)
 
 normalize_d = mcolors.Normalize(vmin=0, vmax=max(analysis[:,3]))
@@ -100,8 +114,8 @@ dp = analysis[0,0]
 
 for line in analysis:
     x = np.array([line[0]-dp,line[0]+dp])
-    y1 = star_eq(x,*star_out)
-    y2 = star_eq(x,*star_in)
+    y1 = star_eq_mod(x,*star_out)
+    y2 = star_eq_mod(x,*star_in)
     
     ax[0].fill_between(x, y1, y2,color=cmap_d(normalize_d(line[3])))
     ax[1].fill_between(x, y1, y2,color=cmap_r(normalize_r(line[4])))

@@ -10,8 +10,17 @@ import numpy as np
 import matplotlib.pyplot as plt
 import ursamirror as um
 
-def app2paper(app):
-    app_transf = np.copy(app)
+def app2paper(app_image):
+    """
+    Converts an app image to a transparent paper-like image.
+    
+    Parameters:
+    - app_image: Input image array
+    
+    Returns:
+    - Transformed image array
+    """
+    app_transf = np.copy(app_image/255)
     app_transf[:,:,3] = np.zeros(app_transf.shape[:2])
     app_transf[:,:,3] = app_transf[:,:,0].astype(bool) + app_transf[:,:,2].astype(bool)
     app_transf[:,:,1] = np.zeros(app_transf.shape[:2])
@@ -114,7 +123,7 @@ ax[1].plot(*density_raw(paper2_class),"o",c="forestgreen")
 ax[1].plot(*density_raw(app_class),"o",c="slateblue")
 lim =  ax[1].get_ylim()
 # ax[0].vlines(np.linspace(0,2*np.pi,6,endpoint=True),*lim,color="firebrick",lw=3)
-ax[1].vlines(np.linspace(0,2*np.pi,6,endpoint=True)+np.deg2rad(36.0),*lim)
+ax[1].vlines(np.linspace(0,2*np.pi,6,endpoint=True),*lim,color="goldenrod",lw=3)
 ax[1].set_ylim(lim)
 ax[1].set_theta_zero_location("N")
 ax[1].set_theta_direction(-1)
